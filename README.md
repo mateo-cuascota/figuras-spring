@@ -9,19 +9,6 @@ Está construida sobre el diseño de la actividad anterior: interfaz `FiguraGeom
 clase abstracta `Figura` y las figuras básicas `Circulo`, `Rectangulo` y `Triangulo`.
 
 ---
-
-## Requisitos cumplidos
-
-| Requisito | Cómo se resuelve |
-|---|---|
-| Desarrollar en Java (Spring) | Spring Boot 4.1 · Java 21 |
-| Instanciar cualquier figura por nombre y parámetros en tiempo de ejecución, p. ej. `("Circulo", radio=5)` | `FiguraFactory` busca la clase por su nombre y la crea por **reflexión** con `getConstructor(Map.class).newInstance(parametros)` |
-| Solo las figuras básicas son nativas | `Circulo`, `Rectangulo` y `Triangulo` |
-| Cargar y compilar Groovy en tiempo de ejecución; funciona como clase nativa | `CargadorGroovy` compila el código con `GroovyClassLoader` y lo registra en la misma fábrica |
-| **Extra:** consumir un servicio externo para obtener nuevas figuras | `ServicioFigurasRemotas` descarga un catálogo JSON desde GitHub y compila cada figura |
-
----
-
 ## Cómo ejecutarlo
 
 Requiere **Java 21**. No hace falta instalar Maven (se usa el wrapper incluido).
@@ -42,9 +29,7 @@ Ejecutar las pruebas:
 ```bash
 ./mvnw test
 ```
-
 ---
-
 ## Arquitectura
 
 ```
@@ -66,13 +51,6 @@ com.figuras
 └── MostrarHost               muestra la URL al arrancar
 ```
 
-```
-Página web ─▶ Controladores ─▶ FiguraFactory ─▶ Circulo, Rectangulo, Triangulo, Pentagono…
-                                     ▲
-           ServicioFigurasRemotas ─▶ CargadorGroovy
-           (descarga de GitHub)      (compila en memoria)
-```
-
 **Principios de POO aplicados**
 
 - **Abstracción:** `FiguraGeometrica` define el contrato y `Figura` declara los cálculos abstractos.
@@ -80,34 +58,6 @@ Página web ─▶ Controladores ─▶ FiguraFactory ─▶ Circulo, Rectangulo
 - **Polimorfismo:** el controlador solo llama a `calcularArea()` y `calcularPerimetro()`; no sabe
   qué figura concreta tiene ni si viene de Java o de Groovy. No hay ningún `if`/`switch` por tipo.
 - **Encapsulamiento:** las medidas son atributos privados e inmutables.
-
----
-
-## API REST
-
-| Método | Ruta | Descripción |
-|---|---|---|
-| `GET`  | `/api/figuras` | Lista las figuras registradas |
-| `POST` | `/api/figuras/calcular` | Instancia una figura y devuelve área y perímetro |
-| `POST` | `/api/figuras/cargar` | Compila y registra una figura Groovy (cuerpo `text/plain`) |
-| `POST` | `/api/figuras/importar` | Importa las figuras del servicio externo |
-
-**Ejemplo: `("Circulo", radio=5)`**
-
-```http
-POST /api/figuras/calcular
-Content-Type: application/json
-
-{ "clase": "Circulo", "parametros": { "radio": 5 } }
-```
-
-```json
-{ "clase": "Circulo", "area": 78.53981633974483, "perimetro": 31.41592653589793 }
-```
-
-Los errores responden con el mismo formato, p. ej. `400 { "error": "Figura no registrada: Nonagono" }`.
-
-Más ejemplos con `curl` en [PRUEBAS.md](PRUEBAS.md).
 
 ---
 
@@ -168,9 +118,6 @@ Configuración en `src/main/resources/application.properties`:
 figuras.remoto.catalogo-url=https://raw.githubusercontent.com/mateo-cuascota/figuras-catalogo/main/figuras.json
 figuras.remoto.cargar-al-iniciar=false   # true = importa automáticamente al arrancar
 ```
-
-> Sin conexión a internet se puede usar el catálogo local incluido:
-> `figuras.remoto.catalogo-url=http://localhost:${server.port:8080}/_catalogo_local/figuras.json`
 
 ---
 
