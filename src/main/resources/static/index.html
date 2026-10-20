@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Figuras · Laboratorio geométrico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0f17;
+    --panel: #111827cc;
+    --panel-solid: #121a29;
+    --line: #1f2a3d;
+    --line-2: #2a3850;
+    --txt: #e6ebf5;
+    --mute: #8a97ad;
+    --acc: #c6f24e;      /* lima */
+    --acc-2: #5ee6ff;    /* cian */
+    --acc-3: #ff7ab6;    /* rosa (groovy) */
+    --bad: #ff6b6b;
+    --r: 16px;
+    --mono: "JetBrains Mono", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    color: var(--txt);
+    background:
+      radial-gradient(900px 500px at 85% -10%, #5ee6ff22, transparent 60%),
+      radial-gradient(700px 500px at -10% 30%, #c6f24e18, transparent 60%),
+      linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 32px 32px,
+      var(--bg);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  /* ---------- cabecera ---------- */
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 26px; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .logo { width: 46px; height: 46px; }
+  .logo polygon { animation: girar 14s linear infinite; transform-origin: 50% 50%; }
+  @keyframes girar { to { transform: rotate(360deg); } }
+  h1 { font-size: 26px; margin: 0; letter-spacing: -.02em; }
+  h1 span { color: var(--acc); }
+  .sub { color: var(--mute); font-size: 14px; margin-top: 2px; }
+  .estado { display: flex; gap: 10px; flex-wrap: wrap; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border: 1px solid var(--line-2); border-radius: 99px; background: var(--panel); font-size: 13px; color: var(--mute); backdrop-filter: blur(8px); }
+  .pill b { color: var(--txt); font-weight: 600; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--mute); }
+  .dot.on { background: var(--acc); box-shadow: 0 0 0 4px #c6f24e30; animation: latir 1.8s infinite; }
+  .dot.off { background: var(--bad); }
+  @keyframes latir { 50% { box-shadow: 0 0 0 7px #c6f24e10; } }
+
+  /* ---------- layout ---------- */
+  .grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--line-2); border-radius: var(--r); padding: 18px; backdrop-filter: blur(10px); }
+  .panel h2 { margin: 0 0 4px; font-size: 15px; letter-spacing: .02em; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .panel .hint { color: var(--mute); font-size: 13px; margin: 0 0 14px; }
+  .tag { white-space: nowrap; flex-shrink: 0; font: 500 11px var(--mono); color: var(--mute); border: 1px solid var(--line-2); padding: 2px 8px; border-radius: 99px; }
+
+  /* ---------- galería ---------- */
+  .galeria { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .card { position: relative; border: 1px solid var(--line-2); border-radius: 12px; padding: 12px 10px 10px; background: var(--panel-solid); cursor: pointer; text-align: center; transition: .18s; color: var(--txt); font: inherit; }
+  .card:hover { transform: translateY(-2px); border-color: var(--acc-2); }
+  .card.activa { border-color: var(--acc); box-shadow: 0 0 0 3px #c6f24e25, inset 0 0 30px #c6f24e10; }
+  .card svg { width: 54px; height: 54px; display: block; margin: 0 auto 6px; overflow: visible; }
+  .card .forma { fill: #5ee6ff18; stroke: var(--acc-2); stroke-width: 9; stroke-linejoin: round; transition: .2s; }
+  .card.activa .forma, .card:hover .forma { fill: #c6f24e22; stroke: var(--acc); }
+  .card .n { font-size: 13px; font-weight: 600; }
+  .card .t { position: absolute; top: 7px; right: 7px; font: 500 9px var(--mono); padding: 1px 6px; border-radius: 99px; text-transform: uppercase; letter-spacing: .05em; }
+  .t.nativa { color: var(--acc-2); border: 1px solid #5ee6ff55; }
+  .t.groovy { color: var(--acc-3); border: 1px solid #ff7ab655; }
+  .card.nueva { animation: aparecer .6s ease; }
+  @keyframes aparecer { from { opacity: 0; transform: scale(.8); } }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 10px; padding: 11px 16px; font: 600 14px "Space Grotesk", sans-serif; cursor: pointer; transition: .15s; }
+  .btn:active { transform: scale(.97); }
+  .btn.pri { background: var(--acc); color: #0b0f17; }
+  .btn.pri:hover { filter: brightness(1.08); box-shadow: 0 6px 24px #c6f24e40; }
+  .btn.sec { background: transparent; color: var(--txt); border: 1px solid var(--line-2); }
+  .btn.sec:hover { border-color: var(--acc-2); color: var(--acc-2); }
+  .btn.full { width: 100%; margin-top: 14px; }
+  .btn[disabled] { opacity: .5; pointer-events: none; }
+
+  /* ---------- laboratorio ---------- */
+  .lab { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 700px) { .lab { grid-template-columns: 1fr; } }
+  .lienzo { position: relative; aspect-ratio: 1; border: 1px dashed var(--line-2); border-radius: 14px; background: radial-gradient(circle at 50% 50%, #5ee6ff10, transparent 70%); display: grid; place-items: center; overflow: hidden; }
+  .lienzo svg { width: 88%; height: 88%; overflow: visible; }
+  .lienzo .forma { fill: #c6f24e1a; stroke: var(--acc); stroke-width: 2.2; stroke-linejoin: round; transition: all .5s cubic-bezier(.3,1.4,.5,1); }
+  .lienzo .cota { stroke: var(--acc-2); stroke-width: 1.2; stroke-dasharray: 4 4; fill: none; }
+  .lienzo .cota-txt { fill: var(--acc-2); font: 500 12px var(--mono); }
+  .lienzo .dibujo { animation: trazo 1s ease; }
+  @keyframes trazo { from { opacity: 0; transform: scale(.85); transform-origin: center; } }
+  .lienzo .nombre { position: absolute; left: 14px; top: 12px; font: 500 12px var(--mono); color: var(--mute); }
+
+  label { display: block; font-size: 13px; color: var(--mute); margin: 0 0 6px; }
+  .campos { display: grid; gap: 12px; }
+  .campo { display: grid; grid-template-columns: 1fr 120px; align-items: center; gap: 10px; background: var(--panel-solid); border: 1px solid var(--line-2); border-radius: 10px; padding: 8px 8px 8px 12px; }
+  .campo span { font: 500 13px var(--mono); }
+  input, textarea, select { width: 100%; background: #0b0f17; color: var(--txt); border: 1px solid var(--line-2); border-radius: 8px; padding: 9px 10px; font: 14px var(--mono); outline: none; transition: border .15s; }
+  input:focus, textarea:focus, select:focus { border-color: var(--acc); }
+  .campo.libre { grid-template-columns: 1fr 1fr 34px; padding: 8px; }
+  .x { background: none; border: 1px solid var(--line-2); color: var(--mute); border-radius: 8px; height: 36px; cursor: pointer; }
+  .x:hover { color: var(--bad); border-color: var(--bad); }
+  .mas { background: none; border: 1px dashed var(--line-2); color: var(--mute); border-radius: 10px; padding: 9px; cursor: pointer; font: inherit; font-size: 13px; }
+  .mas:hover { color: var(--acc-2); border-color: var(--acc-2); }
+
+  .resultados { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .stat { background: var(--panel-solid); border: 1px solid var(--line-2); border-radius: 12px; padding: 14px; }
+  .stat .k { font-size: 12px; color: var(--mute); text-transform: uppercase; letter-spacing: .08em; }
+  .stat .v { font-size: 30px; font-weight: 700; margin-top: 4px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .stat .u { font: 12px var(--mono); color: var(--mute); }
+  .stat.a .v { color: var(--acc); }
+  .stat.p .v { color: var(--acc-2); }
+  .error { margin-top: 14px; padding: 12px 14px; border-radius: 10px; border: 1px solid #ff6b6b66; background: #ff6b6b14; color: #ffb3b3; font-size: 14px; display: none; }
+  .error.show { display: block; animation: sacudir .35s; }
+  @keyframes sacudir { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+  /* ---------- editor groovy ---------- */
+  .bajo { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; margin-top: 20px; }
+  @media (max-width: 900px) { .bajo { grid-template-columns: 1fr; } }
+  .editor { border: 1px solid var(--line-2); border-radius: 12px; overflow: hidden; background: #0a0e15; }
+  .editor-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border-bottom: 1px solid var(--line-2); background: var(--panel-solid); }
+  .luces { display: flex; gap: 6px; } .luces i { width: 10px; height: 10px; border-radius: 50%; background: #ff5f57; } .luces i:nth-child(2){background:#febc2e;} .luces i:nth-child(3){background:#28c840;}
+  .editor-top select { width: auto; padding: 5px 8px; font-size: 12px; }
+  .editor-top .file { font: 12px var(--mono); color: var(--mute); }
+  .editor textarea { border: 0; border-radius: 0; min-height: 300px; resize: vertical; line-height: 1.55; font-size: 13px; padding: 14px; background: transparent; tab-size: 4; }
+
+  /* ---------- registro ---------- */
+  .log { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; max-height: 380px; overflow: auto; }
+  .log li { display: grid; grid-template-columns: 54px 1fr; gap: 10px; font-size: 13px; padding: 10px 12px; border-radius: 10px; background: var(--panel-solid); border: 1px solid var(--line-2); animation: aparecer .3s; }
+  .log time { font: 11px var(--mono); color: var(--mute); padding-top: 2px; }
+  .log .ok { border-left: 3px solid var(--acc); }
+  .log .info { border-left: 3px solid var(--acc-2); }
+  .log .groovy { border-left: 3px solid var(--acc-3); }
+  .log .err { border-left: 3px solid var(--bad); }
+  .log code { font: 12px var(--mono); color: var(--acc-2); }
+  .vacio { color: var(--mute); font-size: 13px; text-align: center; padding: 30px 0; }
+
+  /* ---------- toast ---------- */
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translate(-50%, 120px); background: var(--panel-solid); border: 1px solid var(--acc); color: var(--txt); padding: 12px 18px; border-radius: 12px; font-size: 14px; box-shadow: 0 10px 40px #0008; transition: transform .35s cubic-bezier(.3,1.4,.5,1); z-index: 10; max-width: calc(100% - 32px); }
+  .toast.show { transform: translate(-50%, 0); }
+  .toast.mal { border-color: var(--bad); }
+  footer { text-align: center; color: var(--mute); font-size: 12px; margin-top: 34px; font-family: var(--mono); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 50 50">
+        <polygon points="25,4 45,18 38,43 12,43 5,18" fill="none" stroke="#c6f24e" stroke-width="2.5" stroke-linejoin="round"/>
+        <circle cx="25" cy="27" r="7" fill="none" stroke="#5ee6ff" stroke-width="2.5"/>
+      </svg>
+      <div>
+        <h1>Figuras<span>.</span>lab</h1>
+        <div class="sub">Instancia figuras por nombre · compila Groovy en caliente · importa desde un servicio externo</div>
+      </div>
+    </div>
+    <div class="estado">
+      <span class="pill"><span class="dot" id="dot"></span><span id="api-txt">Conectando…</span></span>
+      <span class="pill"><b id="cnt">0</b> figuras · <b id="cnt-g">0</b> groovy</span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- ======== galería ======== -->
+    <aside class="panel">
+      <h2>Figuras <span class="tag">GET /api/figuras</span></h2>
+      <p class="hint">Elige una para calcular.</p>
+      <div class="galeria" id="galeria"></div>
+      <button class="btn sec full" id="btn-importar" onclick="importar()">⇣ Importar del servicio externo</button>
+    </aside>
+
+    <!-- ======== laboratorio ======== -->
+    <main class="panel">
+      <h2>Laboratorio <span class="tag">POST /api/figuras/calcular</span></h2>
+      <p class="hint">La clase se instancia en tiempo de ejecución a partir de su nombre y parámetros.</p>
+      <div class="lab">
+        <div class="lienzo"><span class="nombre" id="lienzo-nombre">—</span><svg id="lienzo" viewBox="-130 -130 260 260"></svg></div>
+        <div>
+          <label>Parámetros</label>
+          <div class="campos" id="campos"></div>
+          <button class="btn pri full" onclick="calcular()">Calcular ⟶</button>
+          <div class="resultados">
+            <div class="stat a"><div class="k">Área</div><div class="v" id="r-area">—</div><div class="u">unidades²</div></div>
+            <div class="stat p"><div class="k">Perímetro</div><div class="v" id="r-per">—</div><div class="u">unidades</div></div>
+          </div>
+          <div class="error" id="error"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="bajo">
+    <!-- ======== editor ======== -->
+    <section class="panel">
+      <h2>Compilar figura Groovy <span class="tag">POST /api/figuras/cargar</span></h2>
+      <p class="hint">Escribe una clase que extienda <code>Figura</code> con un constructor <code>Map</code>. Queda disponible como si fuera nativa.</p>
+      <div class="editor">
+        <div class="editor-top">
+          <div class="luces"><i></i><i></i><i></i></div>
+          <span class="file" id="file">Octagono.groovy</span>
+          <select id="plantilla" onchange="usarPlantilla()">
+            <option value="Octagono">Plantilla: Octágono</option>
+            <option value="Rombo">Plantilla: Rombo</option>
+            <option value="Trapecio">Plantilla: Trapecio</option>
+            <option value="Elipse">Plantilla: Elipse</option>
+          </select>
+        </div>
+        <textarea id="codigo" spellcheck="false"></textarea>
+      </div>
+      <button class="btn pri full" onclick="cargar()">⚙ Compilar y registrar</button>
+    </section>
+
+    <!-- ======== registro ======== -->
+    <section class="panel">
+      <h2>Actividad <span class="tag">en vivo</span></h2>
+      <p class="hint">Lo que va pasando en el servidor.</p>
+      <ul class="log" id="log"><li class="vacio" style="display:block;border:0;background:none">Sin actividad todavía</li></ul>
+    </section>
+  </div>
+
+  <footer>figuras-spring · Spring Boot + Groovy</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '/api/figuras';
+const NATIVAS = ['Circulo', 'Rectangulo', 'Triangulo'];
+const LADOS = { Triangulo:3, Pentagono:5, Hexagono:6, Heptagono:7, Octagono:8, Nonagono:9, Decagono:10 };
+const EJEMPLOS = {
+  Circulo: { radio: 5 }, Rectangulo: { base: 4, altura: 6 }, Triangulo: { ladoA: 3, ladoB: 4, ladoC: 5 },
+  Pentagono: { lado: 4 }, Hexagono: { lado: 4 }, Octagono: { lado: 3 },
+  Rombo: { diagonalMayor: 8, diagonalMenor: 6 }, Trapecio: { baseMayor: 8, baseMenor: 4, altura: 3 },
+  Elipse: { semiejeMayor: 6, semiejeMenor: 3 }
+};
+
+const PLANTILLAS = {
+Octagono: `import com.figuras.modelo.Figura
+
+// Octágono regular. Parámetro: lado
+class Octagono extends Figura {
+    private final double lado
+
+    Octagono(Map<String, Double> p) {
+        super("Octagono")
+        if (p?.lado == null) throw new IllegalArgumentException("Debes enviar 'lado'.")
+        lado = p.lado as double
+        validarMedida(lado)
+    }
+
+    double calcularArea()      { 2 * (1 + Math.sqrt(2)) * lado * lado }
+    double calcularPerimetro() { 8 * lado }
+}`,
+Rombo: `import com.figuras.modelo.Figura
+
+// Rombo. Parámetros: diagonalMayor, diagonalMenor
+class Rombo extends Figura {
+    private final double D, d
+
+    Rombo(Map<String, Double> p) {
+        super("Rombo")
+        if (p?.diagonalMayor == null || p?.diagonalMenor == null)
+            throw new IllegalArgumentException("Debes enviar 'diagonalMayor' y 'diagonalMenor'.")
+        D = p.diagonalMayor as double
+        d = p.diagonalMenor as double
+        validarMedida(D); validarMedida(d)
+    }
+
+    double calcularArea()      { D * d / 2 }
+    double calcularPerimetro() { 4 * Math.sqrt((D / 2) ** 2 + (d / 2) ** 2) }
+}`,
+Trapecio: `import com.figuras.modelo.Figura
+
+// Trapecio isósceles. Parámetros: baseMayor, baseMenor, altura
+class Trapecio extends Figura {
+    private final double B, b, h
+
+    Trapecio(Map<String, Double> p) {
+        super("Trapecio")
+        if (p?.baseMayor == null || p?.baseMenor == null || p?.altura == null)
+            throw new IllegalArgumentException("Debes enviar 'baseMayor', 'baseMenor' y 'altura'.")
+        B = p.baseMayor as double
+        b = p.baseMenor as double
+        h = p.altura as double
+        validarMedida(B); validarMedida(b); validarMedida(h)
+    }
+
+    double calcularArea()      { (B + b) / 2 * h }
+    double calcularPerimetro() {
+        double lado = Math.sqrt(((B - b) / 2) ** 2 + h ** 2)
+        B + b + 2 * lado
+    }
+}`,
+Elipse: `import com.figuras.modelo.Figura
+
+// Elipse. Parámetros: semiejeMayor, semiejeMenor
+class Elipse extends Figura {
+    private final double a, b
+
+    Elipse(Map<String, Double> p) {
+        super("Elipse")
+        if (p?.semiejeMayor == null || p?.semiejeMenor == null)
+            throw new IllegalArgumentException("Debes enviar 'semiejeMayor' y 'semiejeMenor'.")
+        a = p.semiejeMayor as double
+        b = p.semiejeMenor as double
+        validarMedida(a); validarMedida(b)
+    }
+
+    double calcularArea()      { Math.PI * a * b }
+    // Aproximación de Ramanujan
+    double calcularPerimetro() { Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b))) }
+}`
+};
+
+let figuras = [], actual = null, conocidas = new Set();
+const $ = id => document.getElementById(id);
+const fmt = n => Number(n).toLocaleString('es-EC', { maximumFractionDigits: 2 });
+const hora = () => new Date().toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+
+/* ---------- red ---------- */
+async function pedir(url, op) {
+  const r = await fetch(url, op);
+  const t = await r.text();
+  let d; try { d = JSON.parse(t); } catch { d = t; }
+  if (!r.ok) throw new Error((d && d.error) || ('HTTP ' + r.status));
+  return d;
+}
+
+/* ---------- dibujo ---------- */
+function puntosPoligono(n, r = 100) {
+  const pts = [];
+  for (let i = 0; i < n; i++) {
+    const a = -Math.PI / 2 + i * 2 * Math.PI / n + (n % 2 === 0 ? Math.PI / n : 0);
+    pts.push([r * Math.cos(a), r * Math.sin(a)]);
+  }
+  return pts;
+}
+const pts2str = p => p.map(([x, y]) => x.toFixed(1) + ',' + y.toFixed(1)).join(' ');
+
+function formaSVG(nombre, p = {}, grande = false) {
+  const cota = (x1, y1, x2, y2, txt, tx, ty) => grande
+    ? `<line class="cota" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><text class="cota-txt" x="${tx}" y="${ty}" text-anchor="middle">${txt}</text>` : '';
+  const v = k => p[k] !== undefined && p[k] !== '' ? p[k] : '?';
+
+  if (nombre === 'Circulo')
+    return `<circle class="forma" r="100"/>` + cota(0, 0, 100, 0, 'r = ' + v('radio'), 50, -8);
+
+  if (nombre === 'Rectangulo') {
+    let b = +p.base || 4, h = +p.altura || 6, k = 190 / Math.max(b, h);
+    b *= k; h *= k;
+    return `<rect class="forma" x="${-b/2}" y="${-h/2}" width="${b}" height="${h}" rx="2"/>`
+      + cota(-b/2, h/2 + 14, b/2, h/2 + 14, 'base = ' + v('base'), 0, h/2 + 30)
+      + cota(b/2 + 14, -h/2, b/2 + 14, h/2, '', 0, 0)
+      + (grande ? `<text class="cota-txt" x="${b/2 + 20}" y="4">h = ${v('altura')}</text>` : '');
+  }
+
+  if (nombre === 'Triangulo') {
+    const a = +p.ladoA || 3, b = +p.ladoB || 4, c = +p.ladoC || 5;
+    if (a + b > c && a + c > b && b + c > a) {
+      // lado C en la base; vértice calculado con la ley de cosenos
+      const x = (b * b + c * c - a * a) / (2 * c), y = Math.sqrt(Math.max(b * b - x * x, 0));
+      let P = [[0, 0], [c, 0], [x, -y]];
+      const minX = Math.min(...P.map(q => q[0])), maxX = Math.max(...P.map(q => q[0]));
+      const k = 200 / Math.max(maxX - minX, y);
+      P = P.map(([px, py]) => [(px - (minX + maxX) / 2) * k, (py + y / 2) * k]);
+      return `<polygon class="forma" points="${pts2str(P)}"/>`
+        + cota(P[0][0], P[0][1] + 14, P[1][0], P[1][1] + 14, 'c = ' + v('ladoC'), (P[0][0] + P[1][0]) / 2, P[0][1] + 30);
+    }
+    return `<polygon class="forma" points="${pts2str(puntosPoligono(3))}"/>`;
+  }
+
+  if (nombre === 'Rombo') {
+    let D = +p.diagonalMayor || 8, d = +p.diagonalMenor || 6, k = 200 / Math.max(D, d);
+    D *= k; d *= k;
+    return `<polygon class="forma" points="0,${-D/2} ${d/2},0 0,${D/2} ${-d/2},0"/>`
+      + cota(0, -D/2, 0, D/2, '', 0, 0) + cota(-d/2, 0, d/2, 0, '', 0, 0)
+      + (grande ? `<text class="cota-txt" x="6" y="${-D/4}">D = ${v('diagonalMayor')}</text><text class="cota-txt" x="${d/4}" y="-6" text-anchor="middle">d = ${v('diagonalMenor')}</text>` : '');
+  }
+
+  if (nombre === 'Trapecio') {
+    let B = +p.baseMayor || 8, b = +p.baseMenor || 4, h = +p.altura || 3, k = 200 / Math.max(B, h);
+    B *= k; b *= k; h *= k;
+    return `<polygon class="forma" points="${-B/2},${h/2} ${B/2},${h/2} ${b/2},${-h/2} ${-b/2},${-h/2}"/>`
+      + cota(-B/2, h/2 + 14, B/2, h/2 + 14, 'B = ' + v('baseMayor'), 0, h/2 + 30)
+      + cota(-b/2, -h/2 - 14, b/2, -h/2 - 14, 'b = ' + v('baseMenor'), 0, -h/2 - 22);
+  }
+
+  if (nombre === 'Elipse') {
+    let a = +p.semiejeMayor || 6, b = +p.semiejeMenor || 3, k = 100 / Math.max(a, b);
+    a *= k; b *= k;
+    return `<ellipse class="forma" rx="${a}" ry="${b}"/>`
+      + cota(0, 0, a, 0, 'a = ' + v('semiejeMayor'), a / 2, -8)
+      + cota(0, 0, 0, -b, '', 0, 0);
+  }
+
+  const n = LADOS[nombre];
+  if (n) {
+    const P = puntosPoligono(n);
+    // cota sobre el lado inferior (el de mayor y)
+    let i = 0;
+    for (let j = 0; j < n; j++) {
+      const k = (j + 1) % n, yj = (P[j][1] + P[k][1]) / 2, yi = (P[i][1] + P[(i + 1) % n][1]) / 2;
+      if (yj > yi + .1) i = j;
+    }
+    const A = P[i], B = P[(i + 1) % n], yb = Math.max(A[1], B[1]) + 16;
+    return `<polygon class="forma" points="${pts2str(P)}"/>`
+      + cota(A[0], yb, B[0], yb, 'l = ' + v('lado'), (A[0] + B[0]) / 2, yb + 18);
+  }
+
+  // figura desconocida (Groovy sin dibujo): estrella con "?"
+  return `<polygon class="forma" points="${pts2str(puntosPoligono(7, 90))}" stroke-dasharray="6 6"/>`
+    + `<text x="0" y="${grande ? 18 : 22}" text-anchor="middle" fill="#c6f24e" font-size="${grande ? 54 : 70}" font-family="Space Grotesk">?</text>`;
+}
+
+function dibujar() {
+  $('lienzo').innerHTML = `<g class="dibujo">${formaSVG(actual, leerParametros(true), true)}</g>`;
+  $('lienzo-nombre').textContent = actual ? actual.toLowerCase() + '.svg' : '—';
+}
+
+/* ---------- galería ---------- */
+async function listar() {
+  try {
+    const nombres = await pedir(API);
+    $('dot').className = 'dot on'; $('api-txt').textContent = 'API en línea';
+    const nuevas = nombres.filter(n => conocidas.size && !conocidas.has(n));
+    figuras = nombres; conocidas = new Set(nombres);
+    $('cnt').textContent = nombres.length;
+    $('cnt-g').textContent = nombres.filter(n => !NATIVAS.includes(n)).length;
+    $('galeria').innerHTML = nombres.map(n => {
+      const g = !NATIVAS.includes(n);
+      return `<button class="card ${n === actual ? 'activa' : ''} ${nuevas.includes(n) ? 'nueva' : ''}" onclick="elegir('${n}')">
+        <span class="t ${g ? 'groovy' : 'nativa'}">${g ? 'groovy' : 'nativa'}</span>
+        <svg viewBox="-130 -130 260 260">${formaSVG(n)}</svg><div class="n">${n}</div></button>`;
+    }).join('');
+    if (!actual || !nombres.includes(actual)) elegir(nombres[0]);
+  } catch (e) {
+    $('dot').className = 'dot off'; $('api-txt').textContent = 'API sin conexión';
+  }
+}
+
+function elegir(n) {
+  actual = n;
+  document.querySelectorAll('.card').forEach(c => c.classList.toggle('activa', c.querySelector('.n').textContent === n));
+  armarCampos(EJEMPLOS[n] || (LADOS[n] ? { lado: 4 } : {}));
+  limpiarResultado();
+  dibujar();
+}
+
+/* ---------- parámetros ---------- */
+function armarCampos(ej) {
+  const claves = Object.keys(ej);
+  const c = $('campos');
+  if (claves.length) {
+    c.innerHTML = claves.map(k => `<div class="campo"><span>${k}</span><input type="number" step="any" data-k="${k}" value="${ej[k]}" oninput="dibujar()"></div>`).join('');
+  } else {
+    c.innerHTML = '';
+    filaLibre();
+  }
+  const mas = document.createElement('button');
+  mas.className = 'mas'; mas.textContent = '+ agregar parámetro'; mas.onclick = filaLibre;
+  c.appendChild(mas);
+}
+
+function filaLibre() {
+  const f = document.createElement('div');
+  f.className = 'campo libre';
+  f.innerHTML = `<input placeholder="nombre" class="lk" oninput="dibujar()"><input type="number" step="any" placeholder="valor" class="lv" oninput="dibujar()"><button class="x" title="Quitar">✕</button>`;
+  f.querySelector('.x').onclick = () => { f.remove(); dibujar(); };
+  const mas = $('campos').querySelector('.mas');
+  $('campos').insertBefore(f, mas);
+}
+
+function leerParametros(parcial = false) {
+  const p = {};
+  document.querySelectorAll('#campos input[data-k]').forEach(i => { if (i.value !== '' || parcial) p[i.dataset.k] = i.value === '' ? '' : Number(i.value); });
+  document.querySelectorAll('#campos .libre').forEach(f => {
+    const k = f.querySelector('.lk').value.trim(), v = f.querySelector('.lv').value;
+    if (k && v !== '') p[k] = Number(v);
+  });
+  return p;
+}
+
+/* ---------- acciones ---------- */
+function limpiarResultado() {
+  $('r-area').textContent = '—'; $('r-per').textContent = '—';
+  $('error').classList.remove('show');
+}
+
+function contar(el, hasta) {
+  const ini = performance.now(), dur = 700;
+  const paso = t => {
+    const k = Math.min((t - ini) / dur, 1), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = fmt(hasta * e);
+    if (k < 1) requestAnimationFrame(paso);
+  };
+  requestAnimationFrame(paso);
+}
+
+async function calcular() {
+  if (!actual) return;
+  const parametros = leerParametros();
+  $('error').classList.remove('show');
+  try {
+    const r = await pedir(API + '/calcular', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clase: actual, parametros })
+    });
+    contar($('r-area'), r.area); contar($('r-per'), r.perimetro);
+    registrar('ok', `<code>${r.clase}</code> instanciado · A = ${fmt(r.area)} · P = ${fmt(r.perimetro)}`);
+  } catch (e) {
+    $('r-area').textContent = '—'; $('r-per').textContent = '—';
+    void $('error').offsetWidth;
+    $('error').textContent = e.message; $('error').classList.add('show');
+    registrar('err', `<code>${actual}</code> · ${e.message}`);
+  }
+}
+
+async function cargar() {
+  try {
+    const r = await pedir(API + '/cargar', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: $('codigo').value });
+    toast(`✓ ${r.clase} compilada y registrada`);
+    registrar('groovy', `Groovy compilado → <code>${r.clase}</code> registrada`);
+    await listar(); elegir(r.clase);
+  } catch (e) {
+    toast(e.message, true); registrar('err', e.message);
+  }
+}
+
+async function importar() {
+  const b = $('btn-importar'); b.disabled = true; b.textContent = 'Consultando servicio…';
+  try {
+    const r = await pedir(API + '/importar', { method: 'POST' });
+    const cargadas = r.resultados.filter(x => x.estado === 'cargada').map(x => x.nombre);
+    const ya = r.resultados.filter(x => x.estado === 'ya-registrada').map(x => x.nombre);
+    const err = r.resultados.filter(x => x.estado === 'error');
+    registrar('info', `Servicio externo <code>${r.origen}</code> · ${r.resultados.length} figuras en el catálogo`);
+    cargadas.forEach(n => registrar('groovy', `Importada y compilada → <code>${n}</code>`));
+    err.forEach(x => registrar('err', `<code>${x.nombre}</code> · ${x.detalle}`));
+    toast(cargadas.length ? `⇣ ${cargadas.length} figura(s) nuevas: ${cargadas.join(', ')}` : `Todo al día (${ya.length} ya registradas)`);
+    await listar();
+  } catch (e) {
+    toast(e.message, true); registrar('err', e.message);
+  } finally {
+    b.disabled = false; b.textContent = '⇣ Importar del servicio externo';
+  }
+}
+
+function usarPlantilla() {
+  const n = $('plantilla').value;
+  $('codigo').value = PLANTILLAS[n]; $('file').textContent = n + '.groovy';
+}
+
+function registrar(tipo, html) {
+  const log = $('log');
+  const vacio = log.querySelector('.vacio'); if (vacio) vacio.remove();
+  const li = document.createElement('li');
+  li.className = tipo; li.innerHTML = `<time>${hora()}</time><div>${html}</div>`;
+  log.prepend(li);
+}
+
+let tt;
+function toast(msg, mal = false) {
+  const t = $('toast'); t.textContent = msg; t.className = 'toast show' + (mal ? ' mal' : '');
+  clearTimeout(tt); tt = setTimeout(() => t.className = 'toast' + (mal ? ' mal' : ''), 3200);
+}
+
+$('codigo').addEventListener('keydown', e => {
+  if (e.key === 'Tab') { e.preventDefault(); const s = e.target.selectionStart; e.target.setRangeText('    ', s, e.target.selectionEnd, 'end'); }
+});
+
+usarPlantilla();
+listar().then(() => registrar('info', `Conectado · ${figuras.length} figuras disponibles`));
+setInterval(listar, 8000);
+</script>
+</body>
+</html>
